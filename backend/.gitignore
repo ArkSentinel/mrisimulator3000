@@ -1,0 +1,12 @@
+.DS_Store
+.env
+*.log
+tmp/
+data/
+public/
+node_modules/
+vendor/
+*.db
+*.sqlite
+.vscode/
+.idea/
