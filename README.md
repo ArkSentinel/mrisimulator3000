@@ -1,4 +1,4 @@
-# MRInativo - Simulador de Consola MRI
+# MCP-MRISimulator - Simulador de Consola MRI
 
 Sistema de entrenamiento para operación de consola MRI. Incluye frontend React + Vite, backend Go con Fiber, y base de datos MariaDB remota.
 

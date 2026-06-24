@@ -114,7 +114,7 @@ export default function LoginScreen() {
               MRI Simulator
             </span>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">ScRmhoot</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight">MCP-MRISimulator</h1>
           <p className="text-gray-500 text-sm mt-1">Sistema de Entrenamiento</p>
         </div>
 

@@ -279,7 +279,7 @@ export function TeacherDashboard() {
           </div>
           <div>
             <h1 className="text-base font-bold text-purple-400">Panel Docente</h1>
-            <p className="text-[10px] text-gray-500">ScRmhoot MRI Simulator</p>
+            <p className="text-[10px] text-gray-500">MCP-MRISimulator</p>
           </div>
         </div>
         <div className="flex items-center gap-4">

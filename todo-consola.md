@@ -1,4 +1,4 @@
-# ScRmhoot - Consola MRI
+# MCP-MRISimulator - Consola MRI
 
 ## Resumen de la Consola
 
