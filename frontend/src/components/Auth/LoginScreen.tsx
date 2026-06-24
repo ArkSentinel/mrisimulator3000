@@ -106,20 +106,20 @@ export default function LoginScreen() {
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-4xl flex gap-8">
-        <div className="flex-1">
-          <div className="mb-6">
-            <div className="inline-flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-              <span className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">
-                MRI Simulator
-              </span>
-            </div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">ScRmhoot</h1>
-            <p className="text-gray-500 text-sm mt-1">Sistema de Entrenamiento</p>
+      <div className="relative z-10 w-full max-w-4xl">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+            <span className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">
+              MRI Simulator
+            </span>
           </div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">ScRmhoot</h1>
+          <p className="text-gray-500 text-sm mt-1">Sistema de Entrenamiento</p>
+        </div>
 
-          <div className="bg-[#111111] border border-[#1f1f1f] rounded-sm">
+        <div className="flex items-stretch justify-center gap-8">
+          <div className="bg-[#111111] border border-[#1f1f1f] rounded-sm w-80">
             <div className="h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-30" />
 
             <div className="p-4">
@@ -152,14 +152,7 @@ export default function LoginScreen() {
             <div className="h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-30" />
           </div>
 
-          <div className="flex items-center gap-2 mt-4">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500/50" />
-            <span className="text-[10px] text-gray-600">Sistema Activo</span>
-          </div>
-        </div>
-
-        <div className="flex-1 max-w-sm">
-          <div className="bg-[#111111] border border-[#1f1f1f] rounded-sm">
+          <div className="bg-[#111111] border border-[#1f1f1f] rounded-sm w-72 self-center">
             <div className="h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-30" />
 
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
@@ -231,10 +224,14 @@ export default function LoginScreen() {
 
             <div className="h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-30" />
           </div>
+        </div>
 
-          <div className="text-center mt-4">
-            <span className="text-[10px] text-gray-600 font-mono">v2.4.1</span>
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500/50" />
+            <span className="text-[10px] text-gray-600">Sistema Activo</span>
           </div>
+          <span className="text-[10px] text-gray-600 font-mono">v2.4.1</span>
         </div>
       </div>
     </div>
