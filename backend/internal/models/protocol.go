@@ -10,6 +10,7 @@ type Protocol struct {
 	Indications      string    `json:"indications"`
 	SourceURL        string    `json:"source_url"`
 	CreatedAt        time.Time `json:"created_at"`
+	Secuencias       []Sequence `json:"secuencias,omitempty"`
 }
 
 type Sequence struct {

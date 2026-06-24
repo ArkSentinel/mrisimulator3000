@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -29,7 +30,11 @@ func (h *PatientHandler) GetAll(c *fiber.Ctx) error {
 	var patients []models.Paciente
 	for rows.Next() {
 		var p models.Paciente
-		rows.Scan(&p.ID, &p.Nombre, &p.FechaNacimiento, &p.Accession, &p.Hora, &p.ID)
+		var fechaNac, accession, hora sql.NullString
+		rows.Scan(&p.ID, &p.Nombre, &fechaNac, &accession, &hora, &p.CreatedAt)
+		p.FechaNacimiento = fechaNac.String
+		p.Accession = accession.String
+		p.Hora = hora.String
 		patients = append(patients, p)
 	}
 
@@ -44,16 +49,21 @@ func (h *PatientHandler) GetByID(c *fiber.Ctx) error {
 	id := c.Params("id")
 
 	var p models.Paciente
+	var fechaNac, accession, hora sql.NullString
 	err := database.DB.QueryRow(`
 		SELECT id, nombre, fecha_nacimiento, accession, hora, created_at
 		FROM pacientes WHERE id = ?
-	`, id).Scan(&p.ID, &p.Nombre, &p.FechaNacimiento, &p.Accession, &p.Hora, &p.ID)
+	`, id).Scan(&p.ID, &p.Nombre, &fechaNac, &accession, &hora, &p.CreatedAt)
 
 	if err != nil {
 		return c.Status(http.StatusNotFound).JSON(fiber.Map{
 			"error": "patient not found",
 		})
 	}
+
+	p.FechaNacimiento = fechaNac.String
+	p.Accession = accession.String
+	p.Hora = hora.String
 
 	return c.JSON(p)
 }

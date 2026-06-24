@@ -8,6 +8,7 @@ import (
 
 func Setup(app *fiber.App) {
 	authHandler := handlers.NewAuthHandler()
+	adminHandler := handlers.NewAdminHandler()
 	protocolHandler := handlers.NewProtocolReadHandler()
 	adminProtocolHandler := handlers.NewAdminProtocolHandler()
 	examHandler := handlers.NewExamHandler()
@@ -27,8 +28,13 @@ func Setup(app *fiber.App) {
 	auth.Post("/register", authHandler.Register)
 	auth.Get("/me", middleware.AuthRequired(), authHandler.Me)
 
-	users := api.Group("/admin", middleware.AuthRequired(), middleware.RequireRole("admin"))
-	users.Get("/users", authHandler.GetUsers)
+	admin := api.Group("/admin", middleware.AuthRequired(), middleware.RequireRole("admin"))
+	admin.Get("/users", adminHandler.GetUsers)
+	admin.Post("/users", adminHandler.CreateUser)
+	admin.Put("/users/:id", adminHandler.UpdateUser)
+	admin.Delete("/users/:id", adminHandler.DeleteUser)
+	admin.Get("/students", adminHandler.GetStudents)
+	admin.Get("/teachers", adminHandler.GetTeachers)
 
 	protocols := api.Group("/protocols", middleware.AuthRequired())
 	protocols.Get("/", protocolHandler.GetAll)

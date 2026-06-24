@@ -63,7 +63,10 @@ func (h *ExamHandler) Create(c *fiber.Ctx) error {
 			params.SliceThickness, params.SliceGap, params.FlipAngle, params.MatrixSize,
 			params.NEX, params.PhaseEncoding, params.FatSat, params.Orientation)
 		if err != nil {
-			}
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"error": "failed to insert sequence parameters",
+			})
+		}
 	}
 
 	return c.Status(http.StatusCreated).JSON(fiber.Map{

@@ -37,6 +37,7 @@ func (h *ProtocolReadHandler) GetAll(c *fiber.Ctx) error {
 		p.Descripcion = descripcion.String
 		p.Indications = indications.String
 		p.SourceURL = sourceURL.String
+		p.Secuencias = []models.Sequence{}
 		protocols = append(protocols, p)
 	}
 
@@ -73,6 +74,7 @@ func (h *ProtocolReadHandler) GetByID(c *fiber.Ctx) error {
 	p.Descripcion = descripcion.String
 	p.Indications = indications.String
 	p.SourceURL = sourceURL.String
+	p.Secuencias = []models.Sequence{}
 
 	seqRows, err := database.DB.Query(`
 		SELECT id, protocolo_id, nombre_secuencia, plane,
@@ -93,7 +95,7 @@ func (h *ProtocolReadHandler) GetByID(c *fiber.Ctx) error {
 				&s.FlipAngleMin, &s.FlipAngleMax, &s.SliceThicknessMin, &s.SliceThicknessMax,
 				&s.MatrixMin, &s.MatrixMax, &s.NEXMin, &s.NEXMax,
 				&s.OrientationDefault, &s.FatSuppression, &s.PhaseEncoding, &s.TechnicalParams)
-			p.Indications = s.NombreSecuencia
+			p.Secuencias = append(p.Secuencias, s)
 		}
 	}
 
@@ -115,10 +117,10 @@ func (h *ProtocolReadHandler) GetByID(c *fiber.Ctx) error {
 }
 
 func (h *ProtocolReadHandler) GetSequences(c *fiber.Ctx) error {
-	protocolID, err := strconv.Atoi(c.Query("protocol_id"))
+	protocolID, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"error": "protocol_id is required",
+			"error": "invalid protocol id",
 		})
 	}
 

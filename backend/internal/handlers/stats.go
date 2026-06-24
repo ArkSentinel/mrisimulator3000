@@ -63,9 +63,10 @@ func GetStats(c *fiber.Ctx) error {
 
 	topStudents := []StudentStats{}
 	rows, err := database.DB.Query(`
-		SELECT u.nombre, COALESCE(AVG(er.score), 0) as avg_score, COUNT(er.id) as exam_count
+		SELECT u.nombre, COALESCE(AVG(er.score_total), 0) as avg_score, COUNT(er.id) as exam_count
 		FROM users u
-		LEFT JOIN exam_results er ON u.id = er.user_id
+		LEFT JOIN estudios e ON u.id = e.user_id
+		LEFT JOIN exam_results er ON e.id = er.estudio_id
 		WHERE u.role = 'estudiante'
 		GROUP BY u.id, u.nombre
 		ORDER BY avg_score DESC
@@ -85,7 +86,8 @@ func GetStats(c *fiber.Ctx) error {
 	activityRows, err := database.DB.Query(`
 		SELECT u.nombre, 'Completed exam' as action, er.created_at
 		FROM exam_results er
-		JOIN users u ON er.user_id = u.id
+		JOIN estudios e ON er.estudio_id = e.id
+		JOIN users u ON e.user_id = u.id
 		ORDER BY er.created_at DESC
 		LIMIT 5
 	`)

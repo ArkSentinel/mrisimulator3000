@@ -25,11 +25,12 @@ type Estudio struct {
 }
 
 type Paciente struct {
-	ID            int       `json:"id"`
-	Nombre        string    `json:"nombre"`
+	ID             int       `json:"id"`
+	Nombre         string    `json:"nombre"`
 	FechaNacimiento string   `json:"fecha_nacimiento"`
-	Accession     string    `json:"accession"`
-	Hora          string    `json:"hora"`
+	Accession      string    `json:"accession"`
+	Hora           string    `json:"hora"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
 
