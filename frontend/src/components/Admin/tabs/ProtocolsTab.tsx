@@ -30,7 +30,7 @@ export function ProtocolsTab() {
   const [newProtocolName, setNewProtocolName] = useState('');
 
   useEffect(() => {
-    fetch(`${API_BASE}/protocols', {
+    fetch(`${API_BASE}/protocols`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
     })
       .then(res => res.json())
@@ -58,7 +58,7 @@ export function ProtocolsTab() {
   const handleAddProtocol = async () => {
     if (!newProtocolName.trim()) return;
     try {
-      const res = await fetch(`${API_BASE}/admin/protocols', {
+      const res = await fetch(`${API_BASE}/admin/protocols`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('mri_token')}` },
         body: JSON.stringify({ nombre: newProtocolName, descripcion: '' })
