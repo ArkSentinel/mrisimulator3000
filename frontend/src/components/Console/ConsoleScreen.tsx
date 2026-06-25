@@ -568,7 +568,7 @@ const handleContinueSequence = () => {
           orientation: params.orientation.toUpperCase(),
         }],
       };
-      const response = await fetch(`${API_BASE}/exams', {
+      const response = await fetch(`${API_BASE}/exams`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

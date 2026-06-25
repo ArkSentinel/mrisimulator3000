@@ -55,7 +55,7 @@ export function StatsTab() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/stats', {
+    fetch(`${API_BASE}/admin/stats`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
     })
       .then(res => res.json())

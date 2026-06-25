@@ -150,7 +150,7 @@ export function TeacherDashboard() {
   });
 
   useEffect(() => {
-    fetch(`${API_BASE}/protocols', {
+    fetch(`${API_BASE}/protocols`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
     })
       .then(res => res.json())
@@ -193,7 +193,7 @@ export function TeacherDashboard() {
 
   const handleCreateSession = async () => {
     try {
-      const res = await fetch(`${API_BASE}/sessions', {
+      const res = await fetch(`${API_BASE}/sessions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -20,7 +20,7 @@ export function UsersTab() {
   const [newUser, setNewUser] = useState({ email: '', password: '', nombre: '', role: 'estudiante' });
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/users', {
+    fetch(`${API_BASE}/admin/users`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
     })
       .then(res => res.json())
@@ -31,7 +31,7 @@ export function UsersTab() {
   const handleAdd = async () => {
     if (!newUser.email || !newUser.password) return;
     try {
-      const res = await fetch(`${API_BASE}/admin/users', {
+      const res = await fetch(`${API_BASE}/admin/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
