@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Save, Loader2, ChevronDown } from 'lucide-react';
+import Swal from 'sweetalert2';
 import { SequenceList } from '../Sidebar/SequenceList';
 import { ControlButtons } from '../Sidebar/ControlButtons';
 import { ViewportGrid } from '../Viewer/ViewportGrid';
@@ -114,7 +115,12 @@ export function ConsoleScreen() {
     // Verificar si la secuencia requiere setup
     const currentSeq = sequences[currentSequenceIndex];
     if (currentSeq.requiresSetup) {
-      alert(`⚠️ Setup requerido: ${currentSeq.setupReason || 'Parámetros fuera de rango válido'}\n\nPor favor ajuste los parámetros antes de ejecutar.`);
+      Swal.fire({
+        title: '⚠️ Setup requerido',
+        text: currentSeq.setupReason || 'Parámetros fuera de rango válido. Por favor ajuste los parámetros antes de ejecutar.',
+        icon: 'warning',
+        confirmButtonText: 'Aceptar',
+      });
       return;
     }
     
@@ -543,46 +549,38 @@ const handleContinueSequence = () => {
     setSaveMessage('');
     try {
       const payload = {
-        paciente_id: patientData?.patient?.id || null,
+        paciente_id: patientData?.patient?.id || 1,
         protocolo_id: selectedProtocolId,
-        secuencia_id: selectedSequence?.id,
-        tipo_estudio: patientData?.protocol || selectedProtocolId ? protocols.find(p => p.id === selectedProtocolId)?.nombre : 'Cerebro',
-        nombre_secuencia: params.sequenceName,
-        tr: params.tr,
-        te: params.te,
-        fov: params.fovRead,
-        slice_thickness: params.sliceThickness,
-        flip_angle: params.flipAngle,
-        phase_direction: params.phaseEncodingDir,
-        matrix_size: `${params.baseResolution}x${Math.round(params.baseResolution * params.phaseResolution / 100)}`,
-        gap_percentage: params.distanceFactor,
-        nex: params.averages,
-        base_resolution: params.baseResolution,
-        fat_suppression: params.fatSuppression,
-        bValue: params.bValue || 0,
-        satBands: params.satBands || [],
-        box_x: fovBox.position[0],
-        box_y: fovBox.position[1],
-        box_w: fovBox.size.read,
-        box_h: fovBox.size.phase,
+        params: [{
+          tr: params.tr,
+          te: params.te,
+          ti: 0,
+          fov_read: params.fovRead,
+          fov_phase: params.fovPhase,
+          slice_thickness: params.sliceThickness,
+          slice_gap: params.distanceFactor,
+          flip_angle: params.flipAngle,
+          matrix_size: params.baseResolution,
+          nex: params.averages,
+          phase_encoding: params.phaseEncodingDir,
+          fat_sat: params.fatSuppression === 'FatSat',
+          orientation: params.orientation.toUpperCase(),
+        }],
       };
-      const response = await fetch('http://localhost:3001/api/exams/save', {
+      const response = await fetch('http://localhost:3000/api/exams', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('mri_token')}`,
+        },
         body: JSON.stringify(payload),
       });
       if (response.ok) {
         const result = await response.json();
-        if (result.evaluation) {
-          const ev = result.evaluation;
-          setSaveMessage(`✓ Saved! Score: ${ev.score}% | Type: ${ev.sequenceType} | Passed: ${ev.passed}/${ev.total}`);
-          if (ev.recommendations && ev.recommendations.length > 0) {
-            ev.recommendations.forEach((rec: { level: string; text: string }) => {
-              console.log(`[${rec.level.toUpperCase()}] ${rec.text}`);
-            });
-          }
+        if (result.error) {
+          setSaveMessage(`Error: ${result.error}`);
         } else {
-          setSaveMessage('✓ Exam saved!');
+          setSaveMessage(`✓ Exam saved! (ID: ${result.id})`);
         }
         setTimeout(() => setSaveMessage(''), 5000);
       }
@@ -607,12 +605,35 @@ const handleContinueSequence = () => {
         <div className="p-3 bg-[#1a1a1a] border-b border-slate-700 shrink-0">
           <div className="flex items-center justify-between mb-2">
             <div className="text-xs text-gray-500 uppercase">Protocol</div>
-            <button
-              onClick={() => navigate('/admin', { state: { from: '/console', protocolId: selectedProtocolId } })}
-              className="text-xs text-gray-500 hover:text-gray-300"
-            >
-              ⚙
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  Swal.fire({
+                    title: '¿Cancelar examen?',
+                    text: 'Perderás todo el progreso actual.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Sí, cancelar',
+                    cancelButtonText: 'No, continuar',
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      navigate('/');
+                    }
+                  });
+                }}
+                className="text-xs text-red-500 hover:text-red-400"
+              >
+                ✕ Cancelar
+              </button>
+              <button
+                onClick={() => navigate('/admin', { state: { from: '/console', protocolId: selectedProtocolId } })}
+                className="text-xs text-gray-500 hover:text-gray-300"
+              >
+                ⚙
+              </button>
+            </div>
           </div>
           <div className="relative">
             <select

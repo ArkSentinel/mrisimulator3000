@@ -30,9 +30,12 @@ export function UsersTab() {
   const handleAdd = async () => {
     if (!newUser.email || !newUser.password) return;
     try {
-      const res = await fetch('http://localhost:3000/api/auth/register', {
+      const res = await fetch('http://localhost:3000/api/admin/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('mri_token')}`,
+        },
         body: JSON.stringify(newUser)
       });
       if (res.ok) {

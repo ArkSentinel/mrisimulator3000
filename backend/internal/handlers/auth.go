@@ -157,9 +157,34 @@ func (h *AuthHandler) Me(c *fiber.Ctx) error {
 		xp = models.UserXP{UsuarioID: userID, XPTotal: 0, Nivel: 1}
 	}
 
-	return c.JSON(models.UserWithXP{
-		User: user,
-		XP:   xp,
+	rows, err := database.DB.Query(`
+		SELECT l.codigo, l.nombre, l.descripcion, l.icono, ul.earned_at
+		FROM usuario_logros ul
+		JOIN logros l ON ul.logro_id = l.id
+		WHERE ul.usuario_id = ?
+		ORDER BY ul.earned_at DESC
+	`, userID)
+
+	var achievements []models.Achievement
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var a models.Achievement
+			var earnedAt sql.NullTime
+			if err := rows.Scan(&a.Codigo, &a.Nombre, &a.Descripcion, &a.Icono, &earnedAt); err == nil {
+				achievements = append(achievements, a)
+			}
+		}
+	}
+
+	if achievements == nil {
+		achievements = []models.Achievement{}
+	}
+
+	return c.JSON(fiber.Map{
+		"user":         user,
+		"xp":           xp,
+		"achievements": achievements,
 	})
 }
 

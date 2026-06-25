@@ -31,10 +31,10 @@ export function AdminScreen() {
         </div>
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate('/console')}
+            onClick={() => navigate('/')}
             className="text-xs text-gray-400 hover:text-white"
           >
-            Console
+            Main View
           </button>
           <button
             onClick={handleLogout}

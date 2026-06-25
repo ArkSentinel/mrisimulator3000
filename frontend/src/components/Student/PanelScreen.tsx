@@ -73,7 +73,9 @@ export function PanelScreen() {
 
   const handlePhaseChange = useCallback((phase: Phase) => {
     if (phase === 'SIMULATION' || phase === 'ACQUISITION') {
-      navigate('/scheduler');
+      navigate('/console');
+    } else if (phase === 'PODIUM') {
+      navigate('/dashboard');
     }
   }, [navigate]);
 
@@ -95,10 +97,13 @@ export function PanelScreen() {
   const handleError = useCallback((code: string) => {
     if (code === 'SESSION_NOT_FOUND') {
       setConnectionStatus('error');
+    } else if (code === 'SESSION_ENDED') {
+      setConnectionStatus('error');
+      alert('La sesión ha terminado');
     }
   }, []);
 
-  const { connected, connect, disconnect } = useSessionSocket({
+  const { connected, reconnecting, connect, disconnect } = useSessionSocket({
     sessionId: pin,
     userId: user?.id || 0,
     role: 'student',
@@ -176,9 +181,18 @@ export function PanelScreen() {
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-orange-500 animate-pulse'}`} />
             <span className="text-xs text-gray-400">
-              {!connected ? 'Esperando sala...' : 'Sesión activa - Esperando inicio...'}
+              {reconnecting ? 'Reconectando...' : !connected ? 'Esperando sala...' : 'Sesión activa - Esperando inicio...'}
             </span>
           </div>
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-[#3a3a3a] rounded transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>Main View</span>
+          </button>
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-[#3a3a3a] rounded transition-colors"

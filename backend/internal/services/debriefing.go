@@ -61,7 +61,7 @@ func (s *DebriefingService) GenerateDebriefing(examID int, userID int) (*models.
 
 	xpGained := s.calculateXPGained(totalScore)
 	newLevel, leveledUp := s.updateUserProgress(userID, xpGained)
-	achievements := s.checkAchievements(userID, examID, totalScore)
+	achievements := s.CheckAchievements(userID, examID, totalScore)
 
 	return &models.DebriefingResponse{
 		ExamID: examID,
@@ -178,7 +178,7 @@ func (s *DebriefingService) updateUserProgress(userID int, xpGained int) (int, b
 	return newLevel, leveledUp
 }
 
-func (s *DebriefingService) checkAchievements(userID int, examID int, score float64) []models.Achievement {
+func (s *DebriefingService) CheckAchievements(userID int, examID int, score float64) []models.Achievement {
 	var earned []models.Achievement
 
 	var examCount int

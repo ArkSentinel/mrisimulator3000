@@ -1,54 +1,19 @@
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: mri_app
-    ports:
-      - "3000:3000"
-    environment:
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_USER=${DB_USER:-mriuser}
-      - DB_PASSWORD=${DB_PASSWORD:-mripass}
-      - DB_NAME=${DB_NAME:-mri_console}
-      - JWT_SECRET=${JWT_SECRET:-changeme-in-production}
-      - GIN_MODE=release
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - mri_network
-
   db:
-    image: mariadb:10.11
-    container_name: mri_db
+    image: mysql:8.0 # O puedes usar mysql:latest
+    container_name: mi-mysql
+    restart: always
     environment:
-      - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-mrirootpass}
-      - MARIADB_DATABASE=${DB_NAME:-mri_console}
-      - MARIADB_USER=${DB_USER:-mriuser}
-      - MARIADB_PASSWORD=${DB_PASSWORD:-mripass}
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./backend/migrations:/docker-entrypoint-initdb.d
+      MYSQL_ROOT_PASSWORD: 12345
+      MYSQL_DATABASE: mri
+      MYSQL_USER: nicolas
+      MYSQL_PASSWORD: 12345
     ports:
       - "3306:3306"
-    healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-    networks:
-      - mri_network
+    volumes:
+      - mysql_data:/var/lib/mysql
 
 volumes:
-  db_data:
-    driver: local
-
-networks:
-  mri_network:
-    driver: bridge
+  mysql_data:

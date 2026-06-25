@@ -1,5 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
-import { Trophy, Zap, Target, Flame, Award, ChevronRight, Star, Shield, Users, GraduationCap } from 'lucide-react';
+import { Trophy, Zap, Target, Flame, ChevronRight, Star, Shield, Users, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const roleConfig = {
@@ -24,7 +24,7 @@ const roleConfig = {
 };
 
 export default function Dashboard() {
-  const { user, xp, logout } = useAuth();
+  const { user, xp, achievements, logout } = useAuth();
   const navigate = useNavigate();
 
   const xpForNextLevel = xp ? (xp.nivel * 500) : 500;
@@ -116,21 +116,30 @@ export default function Dashboard() {
           <div className="bg-[#1a1a1a] border border-slate-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Award className="w-5 h-5 text-gray-400" />
-                Logros Recientes
+                <Trophy className="w-5 h-5 text-gray-400" />
+                Logros Obtenidos
               </h2>
             </div>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 bg-[#0a0a0a] rounded-lg">
-                <div className="w-10 h-10 bg-[#1f1f1f] rounded-full flex items-center justify-center">
-                  <Star className="w-5 h-5 text-gray-400" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-white font-medium">Primer Examen</p>
-                  <p className="text-gray-500 text-sm">Completa tu primer examen</p>
-                </div>
+            {achievements.length > 0 ? (
+              <div className="space-y-3">
+                {achievements.map((achievement) => (
+                  <div key={achievement.codigo} className="flex items-center gap-3 p-3 bg-[#0a0a0a] rounded-lg">
+                    <div className="w-10 h-10 bg-[#1f1f1f] rounded-full flex items-center justify-center">
+                      <Star className="w-5 h-5 text-yellow-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white font-medium">{achievement.nombre}</p>
+                      <p className="text-gray-500 text-sm">{achievement.descripcion}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Star className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Completa exámenes para ganar logros</p>
+              </div>
+            )}
           </div>
         </div>
 

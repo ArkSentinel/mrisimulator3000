@@ -78,11 +78,11 @@ func (h *ProtocolReadHandler) GetByID(c *fiber.Ctx) error {
 
 	seqRows, err := database.DB.Query(`
 		SELECT id, protocolo_id, nombre_secuencia, plane,
-			tr_default, te_default, fov_default, slice_thickness_default,
+			tr_default, te_default, fov_default, slice_thickness,
 			tr_min, tr_max, te_min, te_max, fov_min, fov_max,
 			flip_angle_min, flip_angle_max, slice_thickness_min, slice_thickness_max,
 			matrix_min, matrix_max, nex_min, nex_max,
-			orientation_default, fat_suppression_default, phase_encoding_default, technical_parameters
+			orientation_default, fat_suppression_default, phase_encoding_default
 		FROM secuencias WHERE protocolo_id = ?
 	`, id)
 	if err == nil {
@@ -94,7 +94,7 @@ func (h *ProtocolReadHandler) GetByID(c *fiber.Ctx) error {
 				&s.TRMin, &s.TRMax, &s.TEMin, &s.TEMax, &s.FOVMin, &s.FOVMax,
 				&s.FlipAngleMin, &s.FlipAngleMax, &s.SliceThicknessMin, &s.SliceThicknessMax,
 				&s.MatrixMin, &s.MatrixMax, &s.NEXMin, &s.NEXMax,
-				&s.OrientationDefault, &s.FatSuppression, &s.PhaseEncoding, &s.TechnicalParams)
+				&s.OrientationDefault, &s.FatSuppression, &s.PhaseEncoding)
 			p.Secuencias = append(p.Secuencias, s)
 		}
 	}
@@ -126,7 +126,7 @@ func (h *ProtocolReadHandler) GetSequences(c *fiber.Ctx) error {
 
 	rows, err := database.DB.Query(`
 		SELECT id, protocolo_id, nombre_secuencia, plane,
-			tr_default, te_default, fov_default, slice_thickness_default,
+			tr_default, te_default, fov_default, slice_thickness,
 			tr_min, tr_max, te_min, te_max, fov_min, fov_max,
 			flip_angle_min, flip_angle_max, slice_thickness_min, slice_thickness_max,
 			matrix_min, matrix_max, nex_min, nex_max,

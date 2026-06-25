@@ -57,6 +57,12 @@ func Setup(app *fiber.App) {
 	adminProtocols.Delete("/sequences/:id", adminProtocolHandler.AdminDeleteSequence)
 	adminProtocols.Post("/sequences/:id/copy", adminProtocolHandler.CopySequenceToProtocol)
 
+	adminCategories := api.Group("/admin/categories", middleware.AuthRequired(), middleware.RequireRole("admin"))
+	adminCategories.Get("/", adminProtocolHandler.AdminGetCategories)
+	adminCategories.Post("/", adminProtocolHandler.AdminCreateCategory)
+	adminCategories.Put("/:id", adminProtocolHandler.AdminUpdateCategory)
+	adminCategories.Delete("/:id", adminProtocolHandler.AdminDeleteCategory)
+
 	patients := api.Group("/patients", middleware.AuthRequired())
 	patients.Get("/", patientHandler.GetAll)
 	patients.Get("/:id", patientHandler.GetByID)

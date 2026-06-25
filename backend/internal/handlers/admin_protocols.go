@@ -21,6 +21,7 @@ type CreateProtocolRequest struct {
 	Descripcion      string `json:"descripcion"`
 	AnatomicalRegion string `json:"anatomical_region"`
 	Indications      string `json:"indications"`
+	CategoryID       int    `json:"category_id"`
 }
 
 type UpdateProtocolRequest struct {
@@ -90,7 +91,7 @@ func (h *AdminProtocolHandler) AdminGetProtocols(c *fiber.Ctx) error {
 	query := `
 		SELECT DISTINCT p.id, p.nombre, p.descripcion, p.anatomical_region, p.indications, p.source_url
 		FROM protocolos p
-		LEFT JOIN protocolo_categorias pc ON p.id = pc.protocolo_id
+		INNER JOIN protocolo_categorias pc ON p.id = pc.protocolo_id
 		WHERE 1=1
 	`
 	args := []interface{}{}
@@ -160,6 +161,12 @@ func (h *AdminProtocolHandler) AdminCreateProtocol(c *fiber.Ctx) error {
 	}
 
 	protocolID, _ := result.LastInsertId()
+
+	if req.CategoryID > 0 {
+		database.DB.Exec(`
+			INSERT INTO protocolo_categorias (protocolo_id, categoria_id, es_primaria) VALUES (?, ?, 1)
+		`, protocolID, req.CategoryID)
+	}
 
 	var p models.Protocol
 	database.DB.QueryRow(`
@@ -262,7 +269,7 @@ func (h *AdminProtocolHandler) AdminGetSequences(c *fiber.Ctx) error {
 
 	query := `
 		SELECT id, protocolo_id, nombre_secuencia, plane,
-			tr_default, te_default, fov_default, slice_thickness_default,
+			tr_default, te_default, fov_default, slice_thickness,
 			tr_min, tr_max, te_min, te_max, fov_min, fov_max,
 			flip_angle_min, flip_angle_max, slice_thickness_min, slice_thickness_max,
 			matrix_min, matrix_max, nex_min, nex_max,
@@ -322,18 +329,20 @@ func (h *AdminProtocolHandler) AdminCreateSequence(c *fiber.Ctx) error {
 	result, err := database.DB.Exec(`
 		INSERT INTO secuencias (
 			protocolo_id, nombre_secuencia, plane,
-			tr_default, te_default, fov_default, slice_thickness_default,
+			tr_default, te_default, fov_default, slice_thickness,
 			tr_min, tr_max, te_min, te_max, fov_min, fov_max,
 			flip_angle_min, flip_angle_max, slice_thickness_min, slice_thickness_max,
 			matrix_min, matrix_max, nex_min, nex_max,
-			orientation_default, fat_suppression_default, phase_encoding_default
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			orientation_default, fat_suppression_default, phase_encoding_default,
+			flip_default, matrix_default, averages_default
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`, req.ProtocoloID, req.NombreSecuencia, req.Plane,
 		req.TRDefault, req.TEDefault, req.FOVDefault, req.SliceThicknessDefault,
 		req.TRMin, req.TRMax, req.TEMin, req.TEMax, req.FOVMin, req.FOVMax,
 		req.FlipAngleMin, req.FlipAngleMax, req.SliceThicknessMin, req.SliceThicknessMax,
 		req.MatrixMin, req.MatrixMax, req.NEXMin, req.NEXMax,
-		req.OrientationDefault, req.FatSuppression, req.PhaseEncoding)
+		req.OrientationDefault, req.FatSuppression, req.PhaseEncoding,
+		req.FlipAngleMin, req.MatrixMin, req.NEXMin)
 
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
@@ -346,7 +355,7 @@ func (h *AdminProtocolHandler) AdminCreateSequence(c *fiber.Ctx) error {
 	var s models.Sequence
 	database.DB.QueryRow(`
 		SELECT id, protocolo_id, nombre_secuencia, plane,
-			tr_default, te_default, fov_default, slice_thickness_default,
+			tr_default, te_default, fov_default, slice_thickness,
 			tr_min, tr_max, te_min, te_max, fov_min, fov_max,
 			flip_angle_min, flip_angle_max, slice_thickness_min, slice_thickness_max,
 			matrix_min, matrix_max, nex_min, nex_max,
@@ -401,7 +410,7 @@ func (h *AdminProtocolHandler) AdminUpdateSequence(c *fiber.Ctx) error {
 		args = append(args, req.FOVDefault)
 	}
 	if req.SliceThicknessDefault != 0 {
-		updates = append(updates, "slice_thickness_default = ?")
+		updates = append(updates, "slice_thickness = ?")
 		args = append(args, req.SliceThicknessDefault)
 	}
 	if req.TRMin != 0 {
@@ -621,4 +630,133 @@ func (h *AdminProtocolHandler) CopySequenceToProtocol(c *fiber.Ctx) error {
 		&newSeq.OrientationDefault, &newSeq.FatSuppression, &newSeq.PhaseEncoding)
 
 	return c.Status(http.StatusCreated).JSON(newSeq)
+}
+
+func (h *AdminProtocolHandler) AdminGetCategories(c *fiber.Ctx) error {
+	rows, err := database.DB.Query(`
+		SELECT id, nombre, nombre_corto, padre_id, orden, icono FROM categorias ORDER BY orden, nombre
+	`)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to fetch categories",
+		})
+	}
+	defer rows.Close()
+
+	var categories []models.Categoria
+	for rows.Next() {
+		var cat models.Categoria
+		rows.Scan(&cat.ID, &cat.Nombre, &cat.NombreCorto, &cat.PadreID, &cat.Orden, &cat.Icono)
+		categories = append(categories, cat)
+	}
+
+	if categories == nil {
+		categories = []models.Categoria{}
+	}
+
+	return c.JSON(categories)
+}
+
+func (h *AdminProtocolHandler) AdminCreateCategory(c *fiber.Ctx) error {
+	var req struct {
+		Nombre      string `json:"nombre"`
+		NombreCorto string `json:"nombre_corto"`
+		Icono       string `json:"icono"`
+		Orden       int    `json:"orden"`
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
+	}
+
+	if req.Nombre == "" {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "nombre is required"})
+	}
+
+	result, err := database.DB.Exec(`
+		INSERT INTO categorias (nombre, nombre_corto, icono, orden) VALUES (?, ?, ?, ?)
+	`, req.Nombre, req.NombreCorto, req.Icono, req.Orden)
+
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create category"})
+	}
+
+	id, _ := result.LastInsertId()
+	var cat models.Categoria
+	database.DB.QueryRow(`
+		SELECT id, nombre, nombre_corto, padre_id, orden, icono FROM categorias WHERE id = ?
+	`, id).Scan(&cat.ID, &cat.Nombre, &cat.NombreCorto, &cat.PadreID, &cat.Orden, &cat.Icono)
+
+	return c.Status(http.StatusCreated).JSON(cat)
+}
+
+func (h *AdminProtocolHandler) AdminUpdateCategory(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid id"})
+	}
+
+	var req struct {
+		Nombre      string `json:"nombre"`
+		NombreCorto string `json:"nombre_corto"`
+		Icono       string `json:"icono"`
+		Orden       int    `json:"orden"`
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
+	}
+
+	updates := []string{}
+	args := []interface{}{}
+
+	if req.Nombre != "" {
+		updates = append(updates, "nombre = ?")
+		args = append(args, req.Nombre)
+	}
+	if req.NombreCorto != "" {
+		updates = append(updates, "nombre_corto = ?")
+		args = append(args, req.NombreCorto)
+	}
+	if req.Icono != "" {
+		updates = append(updates, "icono = ?")
+		args = append(args, req.Icono)
+	}
+	if req.Orden != 0 {
+		updates = append(updates, "orden = ?")
+		args = append(args, req.Orden)
+	}
+
+	if len(updates) == 0 {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "no fields to update"})
+	}
+
+	args = append(args, id)
+	query := "UPDATE categorias SET " + joinStrings(updates, ", ") + " WHERE id = ?"
+
+	_, err = database.DB.Exec(query, args...)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update category"})
+	}
+
+	var cat models.Categoria
+	database.DB.QueryRow(`
+		SELECT id, nombre, nombre_corto, padre_id, orden, icono FROM categorias WHERE id = ?
+	`, id).Scan(&cat.ID, &cat.Nombre, &cat.NombreCorto, &cat.PadreID, &cat.Orden, &cat.Icono)
+
+	return c.JSON(cat)
+}
+
+func (h *AdminProtocolHandler) AdminDeleteCategory(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid id"})
+	}
+
+	_, err = database.DB.Exec("DELETE FROM categorias WHERE id = ?", id)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete category"})
+	}
+
+	return c.JSON(fiber.Map{"message": "category deleted"})
 }

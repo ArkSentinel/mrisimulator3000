@@ -97,6 +97,8 @@ const (
 	MSG_BRIEFING_DATA  MessageType = "briefing_data"
 	MSG_STUDENT_READY  MessageType = "student_ready"
 	MSG_ALL_READY      MessageType = "all_ready"
+	MSG_END            MessageType = "end"
+	MSG_SESSION_ENDED  MessageType = "session_ended"
 )
 
 type WSMessage struct {
@@ -405,6 +407,18 @@ func (h *Hub) CloseSession(sessionID string) {
 		session.Mu.Unlock()
 	}
 	delete(h.Sessions, sessionID)
+}
+
+func (h *Hub) GetSessionForPersistence(sessionID string) *Session {
+	h.Mu.RLock()
+	defer h.Mu.RUnlock()
+
+	if session, ok := h.Sessions[sessionID]; ok {
+		session.Mu.RLock()
+		defer session.Mu.RUnlock()
+		return session
+	}
+	return nil
 }
 
 type WSError struct {

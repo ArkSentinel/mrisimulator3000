@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { LogOut } from 'lucide-react';
 
 interface IconButtonProps {
   icon: React.ReactNode;
@@ -63,7 +64,7 @@ const BloqueoIcon = () => (
 export function WelcomeScreen() {
   const navigate = useNavigate();
   const [time, setTime] = useState(new Date());
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -80,6 +81,7 @@ export function WelcomeScreen() {
 
   const isStudent = user?.role === 'estudiante';
   const isDocente = user?.role === 'docente';
+  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="flex flex-col h-screen bg-[#2a2a2a]">
@@ -90,13 +92,13 @@ export function WelcomeScreen() {
             icon={<VerificationIcon />}
             label="Verificación"
             onClick={() => navigate('/verification')}
-            disabled={!isStudent}
+            disabled={!isStudent && !isAdmin}
           />
           <IconButton
             icon={<PanelIcon />}
             label="Panel"
             onClick={() => navigate('/panel')}
-            disabled={!isStudent}
+            disabled={!isStudent && !isAdmin}
           />
           <IconButton
             icon={<ExamIcon />}
@@ -106,14 +108,18 @@ export function WelcomeScreen() {
           <IconButton
             icon={<BloqueoIcon />}
             label="Bloqueo"
-            disabled={!isStudent}
+            disabled={!isStudent && !isAdmin}
           />
         </div>
       </div>
 
       {/* Bottom Bar */}
       <div className="h-8 bg-black flex items-center justify-between px-4">
-        {isDocente ? (
+        {isAdmin ? (
+          <Link to="/admin" className="text-xs text-red-400 hover:text-red-300">
+            Admin
+          </Link>
+        ) : isDocente ? (
           <Link to="/teacher-dashboard" className="text-xs text-purple-400 hover:text-purple-300">
             Panel Docente
           </Link>
@@ -121,11 +127,7 @@ export function WelcomeScreen() {
           <Link to="/student-home" className="text-xs text-orange-400 hover:text-orange-300">
             Mi Progreso
           </Link>
-        ) : (
-          <Link to="/admin" className="text-xs text-gray-600 hover:text-gray-400">
-            Admin
-          </Link>
-        )}
+        ) : null}
         {isAuthenticated ? (
           <Link to="/dashboard" className="text-xs text-blue-400 hover:text-blue-300">
             {user?.nombre} (Dashboard)
@@ -136,6 +138,16 @@ export function WelcomeScreen() {
           </Link>
         )}
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-200"
+          >
+            <LogOut className="w-4 h-4" />
+            Cerrar Sesión
+          </button>
           <span className="text-xs text-gray-400 font-mono">{formatTime(time)}</span>
           <button className="flex items-center gap-1 text-gray-400 hover:text-gray-200">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -42,7 +42,7 @@ func GetStats(c *fiber.Ctx) error {
 	}
 
 	var avgScore sql.NullFloat64
-	database.DB.QueryRow("SELECT AVG(score) FROM exam_results WHERE score IS NOT NULL").Scan(&avgScore)
+	database.DB.QueryRow("SELECT AVG(score_total) FROM exam_results WHERE score_total IS NOT NULL").Scan(&avgScore)
 	avgScoreVal := 0.0
 	if avgScore.Valid {
 		avgScoreVal = avgScore.Float64
@@ -50,12 +50,8 @@ func GetStats(c *fiber.Ctx) error {
 
 	var sessionsToday int
 	err = database.DB.QueryRow(`
-		SELECT COUNT(*) FROM (
-			SELECT created_at FROM user_sessions
-			WHERE DATE(created_at) = CURDATE()
-			UNION
-			SELECT NOW() as created_at
-		) AS today_sessions
+		SELECT COUNT(*) FROM user_sessions
+		WHERE DATE(created_at) = CURDATE()
 	`).Scan(&sessionsToday)
 	if err != nil {
 		sessionsToday = 0

@@ -224,6 +224,16 @@ export function TeacherDashboard() {
     if (session) resumeSession();
   };
 
+  const handleEndSession = () => {
+    if (session && confirm('¿Finalizar la sesión? Los estudiantes serán desconectados.')) {
+      endSession();
+      setSession(null);
+      setStudents([]);
+      setRankings([]);
+      setPhase('BRIEFING');
+    }
+  };
+
   const handleLogout = () => {
     disconnect();
     logout();
@@ -381,6 +391,14 @@ export function TeacherDashboard() {
                         Reanudar
                       </button>
                     </>
+                  )}
+                  {phase === 'SIMULATION' && (
+                    <button
+                      onClick={handleEndSession}
+                      className="w-full h-10 mt-2 bg-red-700 hover:bg-red-600 text-white text-sm font-semibold rounded transition-colors flex items-center justify-center gap-2"
+                    >
+                      Finalizar Sesión
+                    </button>
                   )}
                 </div>
               </div>

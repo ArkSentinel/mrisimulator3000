@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import api from '../services/api';
-import type { User, UserXP } from '../services/api';
+import type { User, UserXP, Achievement } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
   xp: UserXP | null;
+  achievements: Achievement[];
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -18,15 +19,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [xp, setXP] = useState<UserXP | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const initAuth = async () => {
       if (api.isAuthenticated()) {
         try {
-          const { user: u, xp: x } = await api.getMe();
+          const { user: u, xp: x, achievements: a } = await api.getMe();
           setUser(u);
           setXP(x);
+          setAchievements(a || []);
         } catch {
           api.logout();
         }
@@ -42,10 +45,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u);
 
     try {
-      const { xp: x } = await api.getMe();
+      const { xp: x, achievements: a } = await api.getMe();
       setXP(x);
+      setAchievements(a || []);
     } catch {
       setXP({ xp_total: 0, nivel: 1, racha_dias: 0, examenes_totales: 0, ultimo_examen: null });
+      setAchievements([]);
     }
   };
 
@@ -53,12 +58,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api.logout();
     setUser(null);
     setXP(null);
+    setAchievements([]);
   };
 
   const refreshXP = async () => {
     try {
-      const { xp: x } = await api.getMe();
+      const { xp: x, achievements: a } = await api.getMe();
       setXP(x);
+      setAchievements(a || []);
     } catch {
       // XP refresh is non-critical, silently fail
     }
@@ -69,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         xp,
+        achievements,
         isAuthenticated: !!user,
         isLoading,
         login,

@@ -39,7 +39,6 @@ type Sequence struct {
 	OrientationDefault string          `json:"orientation_default"`
 	FatSuppression     string          `json:"fat_suppression_default"`
 	PhaseEncoding      string          `json:"phase_encoding_default"`
-	TechnicalParams    string          `json:"technical_parameters"`
 }
 
 type Categoria struct {

@@ -15,6 +15,19 @@ export interface UserXP {
   ultimo_examen: string | null;
 }
 
+export interface Achievement {
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  icono: string;
+}
+
+export interface MeResponse {
+  user: User;
+  xp: UserXP;
+  achievements: Achievement[];
+}
+
 export interface AuthResponse {
   token: string;
   user: User;
@@ -206,7 +219,7 @@ class API {
     return !!this.token;
   }
 
-  async getMe(): Promise<{ user: User; xp: UserXP }> {
+  async getMe(): Promise<MeResponse> {
     return this.request('/auth/me');
   }
 

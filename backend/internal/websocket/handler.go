@@ -113,6 +113,8 @@ func handleMessage(hub *Hub, client *ClientInfo, msg *WSMessage, c *gwebsocket.C
 		handleSubmit(hub, client, msg)
 	case MSG_STUDENT_READY:
 		handleStudentReady(hub, client)
+	case MSG_END:
+		handleEnd(hub, client)
 	}
 }
 
@@ -214,6 +216,26 @@ func handleResume(hub *Hub, client *ClientInfo) {
 
 	hub.BroadcastToSession(client.SessionID, WSMessage{
 		Type:    MSG_RESUME,
+		Payload: map[string]interface{}{"session_id": client.SessionID},
+	})
+}
+
+func handleEnd(hub *Hub, client *ClientInfo) {
+	if client.Role != "teacher" {
+		return
+	}
+
+	session, ok := hub.GetSession(client.SessionID)
+	if !ok {
+		return
+	}
+
+	if session.TeacherID != client.UserID {
+		return
+	}
+
+	hub.BroadcastToSession(client.SessionID, WSMessage{
+		Type:    MSG_SESSION_ENDED,
 		Payload: map[string]interface{}{"session_id": client.SessionID},
 	})
 }

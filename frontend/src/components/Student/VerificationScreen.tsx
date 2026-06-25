@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 interface HardwareCheck {
   label: string;
@@ -509,10 +510,35 @@ export function VerificationScreen() {
     </div>
   );
 
+  const handleCancel = () => {
+    Swal.fire({
+      title: '¿Cancelar verificación?',
+      text: 'Perderás todo el progreso.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No, continuar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate('/');
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center p-4">
       <div className="w-full max-w-xl">
-        <div className="bg-[#2a2a2a] rounded-2xl p-6 shadow-2xl">
+        <div className="bg-[#2a2a2a] rounded-2xl p-6 shadow-2xl relative">
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={handleCancel}
+              className="text-xs text-gray-400 hover:text-white flex items-center gap-1"
+            >
+              ✕ Cancelar
+            </button>
+          </div>
           {renderStepIndicator()}
           <div className="min-h-[400px]">
             {currentStep === 1 && renderHardwareStep()}

@@ -53,6 +53,11 @@ export function useSessionSocket({
 }: UseSessionSocketOptions) {
   const wsRef = useRef<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
+  const [reconnecting, setReconnecting] = useState(false);
+  const reconnectAttemptsRef = useRef(0);
+  const manuallyDisconnectedRef = useRef(false);
+  const activeSessionIdRef = useRef(sessionId);
+  const maxReconnectDelay = 30000;
 
   const callbacksRef = useRef({
     onLeaderboard,
@@ -93,6 +98,9 @@ export function useSessionSocket({
       case 'submit':
         cb.onSubmitResult?.(payload.success, payload.p_total, payload.m_tiempo);
         break;
+      case 'session_ended':
+        cb.onError?.('SESSION_ENDED', 'La sesión ha terminado');
+        break;
     }
   }, []);
 
@@ -111,6 +119,8 @@ export function useSessionSocket({
 
   const connect = useCallback((sessionIdOverride?: string) => {
     const activeSessionId = sessionIdOverride || sessionId;
+    activeSessionIdRef.current = activeSessionId;
+
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -121,6 +131,8 @@ export function useSessionSocket({
 
     ws.onopen = () => {
       setConnected(true);
+      setReconnecting(false);
+      reconnectAttemptsRef.current = 0;
       const joinMsg: WSMessage = {
         type: 'join',
         payload: { session_id: activeSessionId, role },
@@ -139,6 +151,14 @@ export function useSessionSocket({
 
     ws.onclose = () => {
       setConnected(false);
+      if (!manuallyDisconnectedRef.current) {
+        setReconnecting(true);
+        const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), maxReconnectDelay);
+        reconnectAttemptsRef.current++;
+        setTimeout(() => {
+          connect(activeSessionIdRef.current);
+        }, delay);
+      }
     };
 
     ws.onerror = (error) => {
@@ -182,7 +202,13 @@ export function useSessionSocket({
     send({ type: 'resume', payload: { session_id: sessionId } });
   }, [sessionId, send]);
 
+  const endSession = useCallback(() => {
+    send({ type: 'end', payload: { session_id: sessionId } });
+  }, [sessionId, send]);
+
   const disconnect = useCallback(() => {
+    manuallyDisconnectedRef.current = true;
+    setReconnecting(false);
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
@@ -197,6 +223,7 @@ export function useSessionSocket({
 
   return {
     connected,
+    reconnecting,
     connect,
     disconnect,
     submitSequence,
@@ -204,5 +231,6 @@ export function useSessionSocket({
     startSession,
     pauseSession,
     resumeSession,
+    endSession,
   };
 }

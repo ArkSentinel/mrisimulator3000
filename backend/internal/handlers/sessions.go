@@ -3,10 +3,12 @@ package handlers
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/scrmhoot/mri-backend/internal/database"
 	"github.com/scrmhoot/mri-backend/internal/websocket"
 )
 
@@ -235,9 +237,47 @@ func CloseSession(c *fiber.Ctx) error {
 		return c.Status(403).JSON(fiber.Map{"error": "Only the teacher can close the session"})
 	}
 
+	if err := persistSessionToDB(session); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to persist session: " + err.Error()})
+	}
+
 	hub.CloseSession(sessionID)
 
 	return c.JSON(fiber.Map{"success": true})
+}
+
+func persistSessionToDB(session *websocket.Session) error {
+	sessionJSON, _ := json.Marshal(map[string]interface{}{
+		"phase":      session.Phase.String(),
+		"timer":      session.PhaseTimer,
+		"started_at": session.TimerStart,
+	})
+
+	result, err := database.DB.Exec(`
+		INSERT INTO salas (nombre, docente_id, protocolo_id, estado, config_json, started_at, ended_at)
+		VALUES (?, ?, ?, 'finalizada', ?, ?, NOW())
+	`, session.ID, session.TeacherID, session.ProtocolID, string(sessionJSON), session.CreatedAt)
+	if err != nil {
+		return err
+	}
+
+	salaID, _ := result.LastInsertId()
+
+	for _, student := range session.Students {
+		student.Mu.Lock()
+		examCount := len(student.Submissions)
+		student.Mu.Unlock()
+
+		_, err := database.DB.Exec(`
+			INSERT INTO sala_participantes (sala_id, usuario_id, score_acumulado, examenes_completados)
+			VALUES (?, ?, ?, ?)
+		`, salaID, student.UserID, student.Score, examCount)
+		if err != nil {
+			continue
+		}
+	}
+
+	return nil
 }
 
 func generateSessionID() string {

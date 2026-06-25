@@ -327,6 +327,9 @@ func (h *ExamHandler) Evaluate(c *fiber.Ctx) error {
 		WHERE usuario_id = ?
 	`, newXP, newLevel, time.Now().Format("2006-01-02"), userID)
 
+	achievements := h.debriefingService.CheckAchievements(userID, id, totalScore)
+	_ = achievements
+
 	return c.JSON(models.EvaluationResponse{
 		Score: models.ScoreBreakdown{
 			Total:         totalScore,
