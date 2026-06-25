@@ -123,7 +123,6 @@ export function useSessionSocket({
 
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
-const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
   const wsUrl = `${WS_BASE}/ws?user_id=${userId}&role=${role}&nombre=User${userId}`;
 

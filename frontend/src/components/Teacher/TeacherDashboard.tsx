@@ -137,6 +137,7 @@ export function TeacherDashboard() {
     startSession,
     pauseSession,
     resumeSession,
+    endSession,
   } = useSessionSocket({
     sessionId: session?.id || '',
     userId: user?.id || 0,
