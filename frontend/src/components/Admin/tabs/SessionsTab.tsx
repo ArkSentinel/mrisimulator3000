@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '../../../config/api';
 
 interface Session {
   id: string;
@@ -22,7 +23,7 @@ export function SessionsTab() {
   const [newSession, setNewSession] = useState({ protocol_id: 1, timer_briefing: 60, timer_simulation: 180 });
 
   const fetchSessions = () => {
-    fetch('http://localhost:3000/api/sessions', {
+    fetch(`${API_BASE}/sessions', {
       headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
     })
       .then(res => res.json())
@@ -32,7 +33,7 @@ export function SessionsTab() {
 
   useEffect(() => {
     fetchSessions();
-    fetch('http://localhost:3000/api/protocols', {
+    fetch(`${API_BASE}/protocols', {
       headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
     })
       .then(res => res.json())
@@ -42,7 +43,7 @@ export function SessionsTab() {
 
   const handleCreate = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/sessions', {
+      const res = await fetch(`${API_BASE}/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('mri_token')}` },
         body: JSON.stringify(newSession)
@@ -60,7 +61,7 @@ export function SessionsTab() {
   const handleDelete = async (id: string) => {
     if (!confirm('Close this session?')) return;
     try {
-      await fetch(`http://localhost:3000/api/sessions/${id}`, {
+      await fetch(`${API_BASE}/sessions/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
       });

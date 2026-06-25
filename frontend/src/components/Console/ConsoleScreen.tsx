@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Save, Loader2, ChevronDown } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { API_BASE } from '../../config/api';
 import { SequenceList } from '../Sidebar/SequenceList';
 import { ControlButtons } from '../Sidebar/ControlButtons';
 import { ViewportGrid } from '../Viewer/ViewportGrid';
@@ -567,7 +568,7 @@ const handleContinueSequence = () => {
           orientation: params.orientation.toUpperCase(),
         }],
       };
-      const response = await fetch('http://localhost:3000/api/exams', {
+      const response = await fetch(`${API_BASE}/exams', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '../../../config/api';
 
 interface Stats {
   total_users: number;
@@ -54,7 +55,7 @@ export function StatsTab() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/admin/stats', {
+    fetch(`${API_BASE}/admin/stats', {
       headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
     })
       .then(res => res.json())

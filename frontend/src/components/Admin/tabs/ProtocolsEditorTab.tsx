@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { API_BASE } from '../../../config/api';
 
 function getSequenceDefaults(name: string): Partial<SequenceFormData> {
   const upper = name.toUpperCase();
@@ -96,8 +97,8 @@ interface Category {
   averages_default?: number | null;
 }
 
-const API = 'http://localhost:3000/api';
-const ADMIN_API = 'http://localhost:3000/api/admin';
+const API = API_BASE;
+const ADMIN_API = `${API_BASE}/admin`;
 
 function getHeaders() {
   return {

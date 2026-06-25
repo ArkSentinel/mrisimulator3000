@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSessionSocket, type Phase, type StudentRank, type LeaderboardPayload } from '../../hooks/useSessionSocket';
+import { API_BASE } from '../../config/api';
 
 interface Student {
   user_id: number;
@@ -149,7 +150,7 @@ export function TeacherDashboard() {
   });
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/protocols', {
+    fetch(`${API_BASE}/protocols', {
       headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
     })
       .then(res => res.json())
@@ -165,7 +166,7 @@ export function TeacherDashboard() {
 
   useEffect(() => {
     if (selectedProtocolId) {
-      fetch(`http://localhost:3000/api/protocols/${selectedProtocolId}/sequences`, {
+      fetch(`${API_BASE}/protocols/${selectedProtocolId}/sequences`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
       })
         .then(res => res.json())
@@ -192,7 +193,7 @@ export function TeacherDashboard() {
 
   const handleCreateSession = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/sessions', {
+      const res = await fetch(`${API_BASE}/sessions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

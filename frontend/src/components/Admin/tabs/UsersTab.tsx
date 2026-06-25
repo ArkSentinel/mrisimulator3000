@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '../../../config/api';
 
 interface User {
   id: number;
@@ -19,7 +20,7 @@ export function UsersTab() {
   const [newUser, setNewUser] = useState({ email: '', password: '', nombre: '', role: 'estudiante' });
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/admin/users', {
+    fetch(`${API_BASE}/admin/users', {
       headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
     })
       .then(res => res.json())
@@ -30,7 +31,7 @@ export function UsersTab() {
   const handleAdd = async () => {
     if (!newUser.email || !newUser.password) return;
     try {
-      const res = await fetch('http://localhost:3000/api/admin/users', {
+      const res = await fetch(`${API_BASE}/admin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,7 +53,7 @@ export function UsersTab() {
   const handleDelete = async (id: number) => {
     if (!confirm('Delete this user?')) return;
     try {
-      await fetch(`http://localhost:3000/api/admin/users/${id}`, {
+      await fetch(`${API_BASE}/admin/users/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
       });
@@ -216,7 +217,7 @@ export function UsersTab() {
               <button
                 onClick={async () => {
                   try {
-                    await fetch(`http://localhost:3000/api/admin/users/${editingUser.id}`, {
+                    await fetch(`${API_BASE}/admin/users/${editingUser.id}`, {
                       method: 'PUT',
                       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('mri_token')}` },
                       body: JSON.stringify({ email: editingUser.email, nombre: editingUser.nombre, role: editingUser.role })

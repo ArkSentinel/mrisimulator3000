@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '../../../config/api';
 
 interface Protocol {
   id: number;
@@ -29,7 +30,7 @@ export function ProtocolsTab() {
   const [newProtocolName, setNewProtocolName] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/protocols', {
+    fetch(`${API_BASE}/protocols', {
       headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
     })
       .then(res => res.json())
@@ -43,7 +44,7 @@ export function ProtocolsTab() {
 
   const handleSelectProtocol = (protocol: Protocol) => {
     setSelectedProtocol(protocol);
-    fetch(`http://localhost:3000/api/protocols/${protocol.id}`, {
+    fetch(`${API_BASE}/protocols/${protocol.id}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
     })
       .then(res => res.json())
@@ -57,7 +58,7 @@ export function ProtocolsTab() {
   const handleAddProtocol = async () => {
     if (!newProtocolName.trim()) return;
     try {
-      const res = await fetch('http://localhost:3000/api/admin/protocols', {
+      const res = await fetch(`${API_BASE}/admin/protocols', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('mri_token')}` },
         body: JSON.stringify({ nombre: newProtocolName, descripcion: '' })
@@ -77,7 +78,7 @@ export function ProtocolsTab() {
   const handleDeleteProtocol = async (id: number) => {
     if (!confirm('Delete this protocol and all its sequences?')) return;
     try {
-      await fetch(`http://localhost:3000/api/admin/protocols/${id}`, {
+      await fetch(`${API_BASE}/admin/protocols/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('mri_token')}` }
       });

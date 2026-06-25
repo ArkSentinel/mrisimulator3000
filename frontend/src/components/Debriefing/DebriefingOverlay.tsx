@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, Trophy, Star, Zap, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import type { EvaluationResponse, ErrorPoint } from '../../services/api';
+import { API_BASE } from '../../config/api';
 
 interface DebriefingOverlayProps {
   examId: number;
@@ -15,7 +16,7 @@ export default function DebriefingOverlay({ examId, onClose }: DebriefingOverlay
   useEffect(() => {
     const loadResults = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/exams/${examId}/evaluate`, {
+        const response = await fetch(`${API_BASE}/exams/${examId}/evaluate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
